@@ -46,3 +46,7 @@
   align-self: center;
   justify-self: center;
 }
+/* button {
+  margin: 5px;
+  transition: border-color 0.25s ease-out;
+} */
