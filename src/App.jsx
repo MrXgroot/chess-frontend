@@ -3,7 +3,7 @@ import { Chessboard } from "react-chessboard";
 import io from "socket.io-client";
 import "./App.css";
 import { Chess } from "chess.js";
-const socket = io("https://chess-mania-mrxgroot.vercel.app/");
+const socket = io("https://chess-backend-1-728q.onrender.com");
 function App() {
   const [gameId, setGameId] = useState(null);
   const [loadGame, setLoadGame] = useState(false);
