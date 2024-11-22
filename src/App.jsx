@@ -125,7 +125,7 @@ function App() {
           <Chessboard
             position={fen}
             onPieceDrop={onPieceDrop}
-            boardWidth={boardWidth * 0.625}
+            boardWidth={boardWidth * 0.8}
             boardOrientation={role}
           />
         )}
