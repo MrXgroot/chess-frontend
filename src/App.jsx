@@ -8,9 +8,8 @@ function App() {
   const [gameId, setGameId] = useState(null);
   const [loadGame, setLoadGame] = useState(false);
   const [boardWidth, setBoardWidth] = useState(
-    Math.min(window.innerWidth, 700)
+    Math.min(window.innerWidth, 500)
   );
-
   const [fen, setFen] = useState(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
@@ -32,6 +31,14 @@ function App() {
     socket.on("error", (e) => {
       console.error(e);
     });
+
+    const handleResize = () => {
+      setBoardWidth(Math.min(window.innerWidth, 500));
+
+      console.log(boardWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
     socket.on("loadBoard", () => {
       setLoadGame(true);
     });
@@ -66,7 +73,10 @@ function App() {
       setLoadGame(false);
       alert(message);
     });
-    return () => socket.off();
+    return () => {
+      socket.off();
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const createGame = () => {
@@ -125,7 +135,7 @@ function App() {
           <Chessboard
             position={fen}
             onPieceDrop={onPieceDrop}
-            boardWidth={boardWidth * 0.8}
+            boardWidth={boardWidth - 19}
             boardOrientation={role}
           />
         )}
