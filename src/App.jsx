@@ -7,6 +7,10 @@ const socket = io("https://chess-backend-1-728q.onrender.com");
 function App() {
   const [gameId, setGameId] = useState(null);
   const [loadGame, setLoadGame] = useState(false);
+  const [boardWidth, setBoardWidth] = useState(
+    Math.min(window.innerWidth, 700)
+  );
+
   const [fen, setFen] = useState(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
@@ -102,25 +106,30 @@ function App() {
   return (
     <div className="game-container">
       <h1>CHESS MANIA</h1>
-      {!loadGame && <button onClick={createGame}>Create Game</button>}
-      {!loadGame && (
-        <button onClick={() => joinGame(prompt("Enter Game ID"))}>
-          Join Game
-        </button>
-      )}
+      <div className="game-buttons">
+        {!loadGame && <button onClick={createGame}>Create Game</button>}
+        {!loadGame && (
+          <button onClick={() => joinGame(prompt("Enter Game ID"))}>
+            Join Game
+          </button>
+        )}
 
-      {!loadGame && <button onClick={joinRandom}>join Random</button>}
-      {!loadGame && gameId && (
-        <label onClick={copyToClipboard}>{`click to copy ID`}</label>
-      )}
-      {loadGame && (
-        <Chessboard
-          position={fen}
-          onPieceDrop={onPieceDrop}
-          boardWidth={500}
-          boardOrientation={role}
-        />
-      )}
+        {!loadGame && <button onClick={joinRandom}>join Random</button>}
+        {!loadGame && gameId && (
+          <label onClick={copyToClipboard}>{`click to copy ID`}</label>
+        )}
+      </div>
+
+      <div className="chessboard-container">
+        {loadGame && (
+          <Chessboard
+            position={fen}
+            onPieceDrop={onPieceDrop}
+            boardWidth={boardWidth * 0.625}
+            boardOrientation={role}
+          />
+        )}
+      </div>
     </div>
   );
 }
