@@ -3,6 +3,7 @@ import { Chessboard } from "react-chessboard";
 import io from "socket.io-client";
 import "./App.css";
 import { Chess } from "chess.js";
+import logo from "./assets/logo.svg";
 const socket = io("https://chess-backend-1-728q.onrender.com");
 function App() {
   const [gameId, setGameId] = useState(null);
@@ -14,7 +15,7 @@ function App() {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
   const [role, setRole] = useState(null);
-  const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [isPlayerTurn, setIsPlayerTurn] = useState(false);
   const copyToClipboard = () => {
     if (gameId) {
       navigator.clipboard
@@ -85,8 +86,11 @@ function App() {
   const joinGame = (id) => {
     socket.emit("joinGame", id);
   };
+  const quitGame = () => {
+    if (!loadGame) return;
+    window.location.reload();
+  };
 
-  //ended this i have to create the make move in server .js
   const onPieceDrop = (sourceSquare, targetSquare) => {
     if (!isPlayerTurn) {
       // console.log("not your turn");
@@ -115,31 +119,42 @@ function App() {
 
   return (
     <div className="game-container">
-      <h1>CHESS MANIA</h1>
-      <div className="game-buttons">
-        {!loadGame && <button onClick={createGame}>Create Game</button>}
-        {!loadGame && (
+      <div className="header">
+        <div className="logo-container">
+          <img src={logo} alt="" className="game-logo" onClick={quitGame} />
+        </div>
+
+        <h1>CHESS MANIA</h1>
+      </div>
+
+      {!loadGame && (
+        <div className="game-buttons">
+          <button onClick={createGame}>Create Game</button>
+
           <button onClick={() => joinGame(prompt("Enter Game ID"))}>
             Join Game
           </button>
-        )}
 
-        {!loadGame && <button onClick={joinRandom}>join Random</button>}
-        {!loadGame && gameId && (
-          <label onClick={copyToClipboard}>{`click to copy ID`}</label>
-        )}
-      </div>
+          <button onClick={joinRandom}>join Random</button>
+          {gameId && (
+            <label onClick={copyToClipboard}>
+              <span>{`click to copy ID`}</span>
+            </label>
+          )}
+        </div>
+      )}
 
-      <div className="chessboard-container">
-        {loadGame && (
+      {loadGame && (
+        <div className="chessboard-container">
           <Chessboard
+            className="chess-board"
             position={fen}
             onPieceDrop={onPieceDrop}
             boardWidth={boardWidth - 19}
             boardOrientation={role}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
