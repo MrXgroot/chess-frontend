@@ -1,102 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { Chessboard } from "react-chessboard";
-import io from "socket.io-client";
+import useSocket from "./hooks/useSocket.js";
+import SidePanel from "./Components/SidePanel.jsx";
 import "./App.css";
+import Header from "./Components/Header.jsx";
+import GameButtons from "./Components/GameButtons.jsx";
 import { Chess } from "chess.js";
-import logo from "./assets/logo.svg";
-const socket = io("https://chess-backend-1-728q.onrender.com");
+import Loader from "./Components/Loader.jsx";
 function App() {
   const [gameId, setGameId] = useState(null);
   const [loadGame, setLoadGame] = useState(false);
   const [boardWidth, setBoardWidth] = useState(
     Math.min(window.innerWidth, 500)
   );
+  const [isPremove, setPremove] = useState(false);
+  const [isAutoPromote, setAutoPromote] = useState(false);
+  const [connected, setConnection] = useState(false);
   const [fen, setFen] = useState(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
   );
   const [role, setRole] = useState(null);
   const [isPlayerTurn, setIsPlayerTurn] = useState(false);
-  const copyToClipboard = () => {
-    if (gameId) {
-      navigator.clipboard
-        .writeText(gameId)
-        .then(() => {
-          alert("Game ID copied to clipboard!");
-        })
-        .catch((err) => {
-          console.error("Failed to copy text: ", err);
-        });
-    }
+  const quitGame = () => {
+    window.location.reload();
   };
-  useEffect(() => {
-    socket.on("error", (e) => {
-      console.error(e);
-    });
+  const socket = useSocket(
+    setFen,
+    setGameId,
+    setRole,
+    setIsPlayerTurn,
+    setLoadGame,
+    setConnection,
+    quitGame
+  );
 
+  useEffect(() => {
     const handleResize = () => {
       setBoardWidth(Math.min(window.innerWidth, 500));
-
-      console.log(boardWidth);
     };
 
     window.addEventListener("resize", handleResize);
-    socket.on("loadBoard", () => {
-      setLoadGame(true);
-    });
-    socket.on("gameCreated", ({ gameId, role }) => {
-      // console.log(gameId);
-      setGameId(gameId);
-      setRole(role);
-      setIsPlayerTurn(role == "white");
-    });
-
-    socket.on("roleAssigned", ({ role }) => {
-      setRole(role);
-      setIsPlayerTurn(role === "white");
-      // console.log("role is ", role, "    isPlayerTurn", isPlayerTurn);
-    });
-    socket.on("playerJoined", ({ players, gameId }) => {
-      setGameId(gameId);
-      // console.log("player joined", players, gameId);
-    });
-
-    socket.on("moveMade", ({ fen }) => {
-      // console.log("move made", isPlayerTurn);
-      setFen(fen);
-      setIsPlayerTurn((p) => !p);
-    });
-
-    socket.on("matchClosed", (message) => {
-      setGameId(null);
-      setFen("start");
-      setRole(null);
-      setIsPlayerTurn(true);
-      setLoadGame(false);
-      alert(message);
-    });
     return () => {
-      socket.off();
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  const createGame = () => {
-    socket.emit("createGame");
-  };
-  const joinGame = (id) => {
-    socket.emit("joinGame", id);
-  };
-  const quitGame = () => {
-    if (!loadGame) return;
-    window.location.reload();
+  const copyToClipboard = (id) => {
+    navigator.clipboard.writeText(gameId);
+    alert(gameId + " copied to clipboard");
   };
 
+  const createGame = () => socket.emit("createGame");
+  const joinGame = (id) => socket.emit("joinGame", id);
+  const joinRandom = () => socket.emit("joinRandom");
+
   const onPieceDrop = (sourceSquare, targetSquare) => {
-    if (!isPlayerTurn) {
-      // console.log("not your turn");
-      return false;
-    }
+    if (!isPlayerTurn) return false;
     const move = { from: sourceSquare, to: targetSquare };
+    if (isAutoPromote) move["promotion"] = "q";
     let result = null;
     const chess = new Chess(fen);
     try {
@@ -105,58 +66,81 @@ function App() {
 
     if (result) {
       setFen(chess.fen());
-      // console.log(isPlayerTurn);
       socket.emit("makeMove", { gameId, move });
-    } else {
-      return false;
+      return true;
     }
-    return true;
+    return false;
   };
-  const joinRandom = () => {
-    socket.emit("joinRandom");
-    alert("wait until some one joins the game");
+  const handlePromotionPiece = (piece, promoteFromSquare, promoteToSquare) => {
+    console.log("promotion is called");
+    if (!isPlayerTurn) return false;
+    const move = {
+      from: promoteFromSquare,
+      to: promoteToSquare,
+      promotion: piece[1].toLowerCase(),
+    };
+
+    let result = null;
+    const chess = new Chess(fen);
+    try {
+      result = chess.move(move);
+    } catch (e) {}
+    if (result) {
+      setFen(chess.fen());
+      socket.emit("makeMove", { gameId, move });
+      return true;
+    }
+    return false;
   };
 
   return (
     <div className="game-container">
-      <div className="header">
-        <div className="logo-container">
-          <img src={logo} alt="" className="game-logo" onClick={quitGame} />
-        </div>
-
-        <h1>CHESS MANIA</h1>
-      </div>
-
-      {!loadGame && (
-        <div className="game-buttons">
-          <button onClick={createGame}>Create Game</button>
-
-          <button onClick={() => joinGame(prompt("Enter Game ID"))}>
-            Join Game
-          </button>
-
-          <button onClick={joinRandom}>join Random</button>
-          {gameId && (
-            <label onClick={copyToClipboard}>
-              <span>{`click to copy ID`}</span>
-            </label>
+      {!connected ? (
+        <Loader></Loader>
+      ) : (
+        <>
+          <div className="header-container">
+            <Header quitGame={quitGame}></Header>
+          </div>
+          {!loadGame && (
+            <div className="game-button-container">
+              <GameButtons
+                createGame={createGame}
+                joinGame={joinGame}
+                copyToClipboard={copyToClipboard}
+                gameId={gameId}
+                joinRandom={joinRandom}
+              />
+            </div>
           )}
-        </div>
-      )}
-
-      {loadGame && (
-        <div className="chessboard-container">
-          <Chessboard
-            className="chess-board"
-            position={fen}
-            onPieceDrop={onPieceDrop}
-            boardWidth={boardWidth - 19}
-            boardOrientation={role}
-          />
-        </div>
+          {loadGame && (
+            <div className="main-game-content">
+              <div className="chess-board-container">
+                <Chessboard
+                  className="chess-board"
+                  position={fen}
+                  onPieceDrop={onPieceDrop}
+                  boardWidth={boardWidth - 19}
+                  boardOrientation={role}
+                  arePremovesAllowed={isPremove}
+                  autoPromoteToQueen={isAutoPromote}
+                  onPromotionPieceSelect={handlePromotionPiece}
+                />
+              </div>
+              <div className="side-panel-container">
+                <SidePanel
+                  onQuit={quitGame}
+                  setPremove={setPremove}
+                  isPremove={isPremove}
+                  isAutoPromote={isAutoPromote}
+                  setAutoPromote={setAutoPromote}
+                ></SidePanel>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
-
 export default App;

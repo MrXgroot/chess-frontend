@@ -17,6 +17,11 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 100vh;
+  justify-content: center;
+  border: 1px solid black;
 }
 
 button {
@@ -54,6 +59,17 @@ button:focus-visible {
   }
   button:hover {
     background-color: #e8ebee;
+    color: rgb(7, 7, 7);
+  }
+  .primary-btn {
+    background-color: #1a1a1a;
+  }
+  .danger-btn {
+    background-color: rgb(215, 18, 18);
+  }
+  .active-btn {
+    background-color: rgb(255, 255, 255);
+    color: #e7e7e7;
   }
 }
 
@@ -71,4 +87,15 @@ label {
 
 label:hover {
   background-color: #c7a2e5;
+}
+.primary-btn {
+  background-color: #efefef;
+  color: rgb(7, 7, 7);
+}
+.danger-btn {
+  background-color: rgb(215, 18, 18);
+}
+.active-btn {
+  background-color: rgb(28, 28, 28);
+  color: #e9e9e9;
 }

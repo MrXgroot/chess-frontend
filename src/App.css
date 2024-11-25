@@ -1,64 +1,56 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
 .game-container {
   display: flex;
-  height: 100vh;
   flex-direction: column;
   align-items: center;
+}
+.header-container {
+  flex: 0 0 auto;
+  padding: 4px;
+}
+.main-game-content {
+  display: flex;
+  flex-wrap: row;
+  flex: 1;
+  gap: 20px;
+}
+
+.chess-board-container {
+  flex: 1;
+  border-radius: 9px;
+  overflow: hidden;
+}
+/* changed here */
+.game-button-container {
+  width: 60%;
+  display: flex;
   justify-content: center;
 }
-.chessboard-container {
-  border: 3px solid rgb(0, 0, 0);
-  position: relative;
-}
-.game-buttons {
+
+.side-panel-container {
   display: flex;
-  flex-direction: column;
+  background-color: rgb(130, 123, 116);
+  padding: 10px;
+  border-radius: 9px;
+}
+
+@media (max-width: 768px) {
+  .main-game-content {
+    flex-direction: column;
+  }
+  .side-panel-container {
+    margin-top: 10px;
+  }
+  .side-panel {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 380px) {
+  .side-panel button {
+    font-size: 12px;
+  }
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  transition: all 0.3s ease;
-}
-.header {
-  display: flex;
-  max-height: 100px;
-  align-items: center;
-}
-.game-logo {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transition: all 0.2s ease;
-}
-.game-logo:hover {
-  transform: scale(1.05) rotate(4deg);
-}
-
-.logo-container {
-  height: 100px;
-  display: flex;
-  transition: height 0.3s ease;
-}
-h1 {
-  font-size: clamp(2em, 4vw, 3.5em);
-}
-
-@media (max-width: 480px) {
-  h1 {
-    font-size: 1.8em;
-  }
-  .logo-container {
-    height: 60px;
-  }
-}
-.chess-board {
-  z-index: 100;
+  font-size: 3rem;
 }
