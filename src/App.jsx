@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Chessboard } from "react-chessboard";
-import useSocket from "./hooks/useSocket.js";
+import useSocket from "./Hooks/useSocket.js";
 import SidePanel from "./Components/SidePanel.jsx";
 import "./App.css";
 import Header from "./Components/Header.jsx";
